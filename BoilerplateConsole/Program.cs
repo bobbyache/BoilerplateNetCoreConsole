@@ -1,16 +1,46 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO;
 
 // Dependency Injection and Settings: https://espressocoder.com/2018/12/03/build-a-console-app-in-net-core-like-a-pro/
+// System.CommandLine: https://www.nuget.org/packages/System.CommandLine
+// System.CommandLine (GitHub): https://github.com/dotnet/command-line-api/blob/master/docs/Your-first-app-with-System-CommandLine.md
 
 namespace BoilerplateConsole
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
+
+            // Create a root command with some options
+            var rootCommand = new RootCommand
+            {
+                new Option<int>(
+                    "--int-option",
+                    getDefaultValue: () => 42,
+                    description: "An option whose argument is parsed as an int"),
+                new Option<bool>(
+                    "--bool-option",
+                    "An option whose argument is parsed as a bool"),
+                new Option<FileInfo>(
+                    "--file-option",
+                    "An option whose argument is parsed as a FileInfo")
+            };
+
+            rootCommand.Description = "Boiler Plate Console App";
+
+            // Note that the parameters of the handler method are matched according to the names of the options
+            rootCommand.Handler = CommandHandler.Create<int, bool, FileInfo>((intOption, boolOption, fileOption) =>
+            {
+                Console.WriteLine($"The value for --int-option is: {intOption}");
+                Console.WriteLine($"The value for --bool-option is: {boolOption}");
+                Console.WriteLine($"The value for --file-option is: {fileOption?.FullName ?? "null"}");
+            });
+
             var builder = new ConfigurationBuilder()
              .SetBasePath(Directory.GetCurrentDirectory())
              .AddJsonFile("appsettings.json");
@@ -26,6 +56,9 @@ namespace BoilerplateConsole
 
             var appHost = serviceProvider.GetService<IAppHost>();
             appHost.Run();
+
+            // Parse the incoming args and invoke the handler
+            return rootCommand.InvokeAsync(args).Result;
         }
     }
 }
