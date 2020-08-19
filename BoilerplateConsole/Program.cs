@@ -13,6 +13,12 @@ namespace BoilerplateConsole
 {
     public class Program
     {
+        /// <summary>
+        /// DragonFruit simple example program
+        /// </summary>
+        /// <param name="verbose">Show verbose output</param>
+        /// <param name="flavor">Which flavor to use and how to use it</param>
+        /// <param name="count">How many smoothies?</param>
         public static int Main(bool verbose,
             string flavor = "chocolate",
             int count = 1)
